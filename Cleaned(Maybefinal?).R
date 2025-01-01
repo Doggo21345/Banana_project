@@ -103,11 +103,7 @@ ggplot(by_time_long, aes(x = time_period, y = value, fill = metric)) +
 
 
 #In order to actuall confirm whether or not there is a sigincant differnce between the states this was th best method in my opinion but I exepct my methd to be very wrong
-shapiro.test(Consumption_Log$bananas_consumed)
-leveneTest(bananas_consumed ~ time_period, data = Consumption_Log)
 
-oneway.test(bananas_consumed ~ time_period, data = Consumption_Log_original, var.equal = FALSE)
-posthocTGH(bananas_consumed ~ time_period, data = Consumption_Log_original)
 
 anova_result <- aov(bananas_consumed ~ time_period, data = Consumption_Log)
 summary(anova_result)
@@ -135,15 +131,15 @@ heatmap_data <- bananas_with_totals %>%
 
 
 #Quick note that the heatmap must actually be catagorical variable please
+#this in my opinion is a really bad visualization because it appears that you need 1 continous random variable as well a one discrete random variable for the heatmap in R 
 ggplot(heatmap_data, aes(x = as.factor(ripeness), y = thrown_away, fill = proportion_thrown_away)) +
   geom_tile(color = "white") +
   geom_text(aes(label = scales::percent(proportion_thrown_away, accuracy = 0.1)), color = "orange", size = 4) +
   scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Waste Proportion",) +
-  scale_y_continuous(limits = c(.5,1)+
   labs(
     title = "Heatmap of Banana Waste Proportion by Ripeness and Time Period",
     x = "Ripeness Level",
-    y = "Time Period"
+    y = "Whether or not a bannas was thrown away"
   ) +
   theme_minimal() +
   theme(
@@ -151,8 +147,60 @@ ggplot(heatmap_data, aes(x = as.factor(ripeness), y = thrown_away, fill = propor
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
+Pie_chart_thrown <- bananas_thrown_away %>% 
+  group_by(ripeness) %>%
+  summarize(
+    thrown_count = sum(thrown_away),
+    total_count = n()
+  ) %>%
+  mutate(
+    throwaway_rate = (thrown_count / total_count) * 100
+  )
 
-#Overall show the effect that traffice leverl would have on consumption 
+faceted_data <-  Pie_chart_thrown %>%  
+  pivot_longer(
+    cols = c(thrown_count, throwaway_rate), 
+    names_to = "metric", 
+    values_to ="value"
+  )
+
+
+
+view(Pie_chart_thrown)
+
+ggplot(faceted_data, aes(x = "", y = value, fill = factor(ripeness))) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  facet_wrap(
+    ~ metric, 
+    scales = "free", 
+    labeller = as_labeller(
+      c(
+        "thrown_count" = "Count of Bananas Thrown Away",
+        "throwaway_rate" = "Percentage of Bananas Thrown Away"
+      )
+    )
+  ) +
+  labs(
+    title = "Banana Throwaway Analysis by Ripeness",
+    fill = "Ripeness Level"
+  ) +
+  theme_void() +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(
+      size = 15,       
+      face = "bold",   
+      hjust = .5        
+    )
+  )
+
+
+
+
+
+
+#Overall show the effect that traffic leverl would have on consumption 
 
 ggplot(consumption_traffic, aes(crowd_level, bananas_consumed)) + 
   geom_boxplot() + 
@@ -188,6 +236,8 @@ ggplot(consumption_traffic, aes(crowd_level, bananas_consumed), fill = time_peri
     x = "Amount of traffic present",
     y = "Numbers of bananas consumed"
   )
+
+
 
 # Linear regression analysis for traffic consumption
 traffic_consumption_r <- lm(bananas_consumed ~ time_period.x, data = consumption_traffic)
