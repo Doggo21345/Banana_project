@@ -42,3 +42,100 @@ ggplot(test_data, aes(x = index)) +
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
+
+
+
+
+# Load libraries
+library(caret)
+library(e1071)
+library(randomForest)
+library(xgboost)
+library(nnet)
+library(dplyr)
+
+
+
+# Assume `Consumption_Log` is already loaded into the environment as a data frame
+data <- Consumption_Log_original
+view(data)
+view(Consumption_Log_original)
+
+# Ensure date_id is in Date format if needed
+data$date_id <- as.Date(as.character(data$date_id), format = "%Y%m%d")
+
+# Add is_weekend column based on date_id
+data$is_weekend <- as.integer(weekdays(data$date_id) %in% c("Saturday", "Sunday"))
+
+# Ensure time_period is a factor with predefined levels
+
+# One-hot encode time_period
+time_dummies <- model.matrix(~ time_period - 1, data)
+data <- cbind(data, time_dummies)
+
+# Split data into training and testing sets
+set.seed(123) # Ensure reproducibility
+train_index <- createDataPartition(data$bananas_consumed, p = 0.8, list = FALSE)
+train_data <- data[train_index, ]
+test_data <- data[-train_index, ]
+
+# Define a formula dynamically for simplicity
+predictors <- colnames(time_dummies)
+formula <- as.formula(paste("bananas_consumed ~ is_weekend +", paste(predictors, collapse = " + ")))
+
+
+
+write.csv("")
+
+# Linear Regression
+lm_model <- train(
+  formula, data = train_data, method = "lm", 
+  trControl = trainControl(method = "cv", number = 10)
+)
+lm_preds <- predict(lm_model, test_data)
+lm_rmse <- RMSE(lm_preds, test_data$bananas_consumed)
+
+# Support Vector Machine
+svm_model <- train(
+  formula, data = train_data, method = "svmRadial", 
+  trControl = trainControl(method = "cv", number = 10)
+)
+svm_preds <- predict(svm_model, test_data)
+svm_rmse <- RMSE(svm_preds, test_data$bananas_consumed)
+
+# Random Forest
+rf_model <- train(
+  formula, data = train_data, method = "rf", 
+  trControl = trainControl(method = "cv", number = 10)
+)
+rf_preds <- predict(rf_model, test_data)
+rf_rmse <- RMSE(rf_preds, test_data$bananas_consumed)
+
+# Gradient Boosting
+xgb_model <- train(
+  formula, data = train_data, method = "xgbTree", 
+  trControl = trainControl(method = "cv", number = 10)
+)
+xgb_preds <- predict(xgb_model, test_data)
+xgb_rmse <- RMSE(xgb_preds, test_data$bananas_consumed)
+
+# Neural Network
+nn_model <- train(
+  formula, data = train_data, method = "nnet", 
+  trControl = trainControl(method = "cv", number = 10), 
+  trace = FALSE, linout = TRUE
+)
+nn_preds <- predict(nn_model, test_data)
+nn_rmse <- RMSE(nn_preds, test_data$bananas_consumed)
+
+# Model Comparison
+results <- data.frame(
+  Model = c("Linear Regression", "SVM", "Random Forest", "Gradient Boosting", "Neural Network"),
+  RMSE = c(lm_rmse, svm_rmse, rf_rmse, xgb_rmse, nn_rmse)
+)
+
+# Print results
+print(results)
+
+print(results)
+
