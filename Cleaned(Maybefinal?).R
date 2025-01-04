@@ -1,5 +1,5 @@
 #Cleaned R script 
-pacman::p_load(tidyverse, ggplot2, gganimate, flexdashboard, mosaic, moderndive, effectsize, modelr, rsample, car)
+pacman::p_load(tidyverse, ggplot2, gganimate, flexdashboard, mosaic, moderndive, effectsize, modelr, rsample, car,ggridges)
 
 Traffic_Log <- innerjoin(randomized_banana_consumption_log, Traffic_Log, by = "date_id")
 
@@ -197,12 +197,35 @@ ggplot(faceted_data, aes(x = "", y = value, fill = factor(ripeness))) +
 
 
 
+#I will use this to determine whether or not the ripeness of bannas has anything to do with the consumption 
+
+
+ggplot(Consumption_Log_original, aes(x = bananas_consumed, y = factor(ripeness), fill = factor(ripeness))) +
+  geom_density_ridges(scale = 1.5, alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Density of Banana Consumption by Ripeness",
+       x = "Bananas Consumed",
+       y = "Ripeness (1 = Least Ripe, 5 = Most Ripe)") +
+  scale_fill_viridis_d()
+
+ggplot(Consumption_Log_original, aes(x = bananas_consumed, y = factor(ripeness), fill = factor(ripeness))) +
+  geom_boxplot(scale = 1.5, alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Density of Banana Consumption by Ripeness",
+       x = "Bananas Consumed",
+       y = "Ripeness (1 = Least Ripe, 5 = Most Ripe)") +
+  scale_fill_viridis_d()
+
+
+kruskal.test(bananas_consumed ~ ripeness, data = Consumption_Log_original)
+pairwise.wilcox.test(Consumption_Log_original$bananas_consumed, Consumption_Log_original$ripeness, p.adjust.method = "bonferroni")
+
 
 
 
 #Overall show the effect that traffic leverl would have on consumption 
 
-ggplot(consumption_traffic, aes(crowd_level, bananas_consumed)) + 
+ggplot(consumption_traffic, aes(crowd_level, bananas_consumed, fill = crowd_level)) + 
   geom_boxplot() + 
   labs(
     title = "Box plot to check whether or not thhe traffic level of kins would have an effect on my consumption",
@@ -211,16 +234,28 @@ ggplot(consumption_traffic, aes(crowd_level, bananas_consumed)) +
   ) + 
   theme_minimal() + 
   theme(
-   plot.title = element_text(hjust = 0.5, face = "bold")
+   plot.title = element_text(size = 10,       
+                             face = "bold",   
+                             hjust = .75   )
   )
 
-shapiro.test(consumption_traffic$bananas_consumed)
+kruskal.test(bananas_consumed ~ crowd_level, data = consumption_traffic)
+pairwise.wilcox.test(consumption_traffic$bananas_consumed, consumption_traffic$crowd_level, p.adjust.method = "bonferroni")
 
 
-anova_crowd <- aov(crowd_level ~ bananas_consumed, data = consumption_traffic)
-summary(anova_result)
-TukeyHSD(aov(bananas_consumed ~ time_period, data = Consumption_Log))
-plot(TukeyHSD(aov(bananas_consumed ~ time_period, data = Consumption_Log)))
+consumption_traffic %>%
+  group_by(crowd_level) %>%
+  summarize(mean_bananas = mean(bananas_consumed),
+            sd_bananas = sd(bananas_consumed),
+            count = n())
+
+#to find out whether or not there is a corelational relationship between whether traffic and the actual bannas consumed
+kruskal.test(bananas_consumed ~ crowd_level, data = consumption_traffic)
+#this test suggests that the test is not statistically signifcant
+
+
+
+
 
 # Predict banana consumption based on weekend status
 consumption_weekend <- lm(total_bananas ~ is_weekend, data = consumption_date)
@@ -239,6 +274,34 @@ ggplot(consumption_traffic, aes(crowd_level, bananas_consumed), fill = time_peri
 
 
 
+#visulization and testing whether the restock scheduel has any effect on this 
+
+# Merging datasets
+merged_data <- Consumption_Log_original %>%
+  inner_join(restock_schedule, by = "date_id", suffix = c("_consumption", "_restock"))
+
+# Visualization
+ggplot(merged_data, aes(x = factor(date_id), y = bananas_consumed, fill = restock_type)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_smooth(aes(group = 1), method = "loess", color = "blue", se = FALSE) +
+  annotate("text", x = 2, y = max(merged_data$bananas_consumed), label = "Significant peaks observed", color = "red", size = 4, hjust = 0) +
+  labs(
+    title = "Banana Consumption vs Restock Schedule",
+    subtitle = "Analyzing the impact of restocking events on consumption",
+    x = "Date",
+    y = "Bananas Consumed",
+    caption = "Data Source: Provided Schema"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Statistical Analysis
+ kruskal.test(bananas_consumed ~ restock_type, data = merged_data)
+
+
+pairwise_result <- pairwise.wilcox.test(merged_data$bananas_consumed, merged_data$restock_type, p.adjust.method = "bonferroni")
+print(pairwise_result)
+
+
 # Linear regression analysis for traffic consumption
 traffic_consumption_r <- lm(bananas_consumed ~ time_period.x, data = consumption_traffic)
 rsquared(traffic_consumption_r)
@@ -246,53 +309,5 @@ rsquared(traffic_consumption_r)
 taffic_consumption_banans <- lm(bananas_consumed ~ crowd_level + time_period.x + crowd_level:time_period.x , data = consumption_traffic)  
 eta_squared(taffic_consumption_banans, partial=FALSE) 
 
-# Add ripeness column to Consumption_Log
-ripeness_probabilities <- c(0.25, 0.625, 0.125)  # Probabilities: Green (1-2), Yellow (3-4), Overripe (5+)
-ripeness_values <- c(1, 3, 5)                    # 1: Green, 3: Yellow, 5: Overripe
-Consumption_Log <- Consumption_Log %>%
-  mutate(ripeness = sample(ripeness_values, size = n(), replace = TRUE, prob = ripeness_probabilities))
-
-# Prepare data for modeling
-consumption_date <- consumption_date %>%
-  mutate(date_id = as.integer(format(as.Date(date, "%Y-%m-%d"), "%Y%m%d")))
-
-consumption_traffic <- consumption_traffic %>%
-  mutate(date_id = as.integer(date_id))
-
-merged_data <- consumption_date %>%
-  inner_join(consumption_traffic, by = "date_id") 
-
-split <- initial_split(merged_data, prop = 0.7)
-train_data <- training(split)
-test_data <- testing(split)
-
-model <- lm(bananas_consumed ~ is_weekend + day_of_week + crowd_level, data = train_data)
-
-test_data <- test_data %>%
-  mutate(predictions = predict(model, newdata = test_data))
-
-mae <- test_data %>%
-  summarise(MAE = mean(abs(bananas_consumed - predictions))) %>%
-  pull(MAE)
-
-mse <- test_data %>%
-  summarise(MSE = mean((bananas_consumed - predictions)^2)) %>%
-  pull(MSE)
-
-# Visualize predictions
-test_data <- test_data %>%
-  mutate(index = row_number())
-
-ggplot(test_data, aes(x = index)) +
-  geom_line(aes(y = bananas_consumed, color = "Actual"), size = 1) +
-  geom_line(aes(y = predictions, color = "Predicted"), size = 1, linetype = "dashed") +
-  labs(
-    title = "Predicted vs Actual Banana Consumption",
-    x = "Index (Test Observations)",
-    y = "Bananas Consumed",
-    color = "Legend"
-  ) +
-  theme_minimal() +
-  theme(legend.position = "bottom")
 
 
