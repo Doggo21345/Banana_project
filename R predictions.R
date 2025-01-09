@@ -6,11 +6,12 @@ library(dplyr)
 
 # Fine-tune Random Forest
 set.seed(123)
-rf_grid <- expand.grid(
-  mtry = c(2, 3, 4),  # Try different values for mtry
-  splitrule = c("variance"),  # Split criterion
-  min.node.size = c(5, 10, 15)  # Minimum size of terminal nodes
+rf_grid <- expand.grid( #these are alll lists of hpyer paremeters that I set up potential combinations of and then are tested inside of the training model below 
+  mtry = c(2, 3, 4),  # this is th
+  splitrule = c("variance"), #for a continous random variable we wan to reduce the total amount of varaince that is present in this so 
+  min.node.size = c(5, 10, 15)  
 )
+
 
 rf_model_tuned <- train(
   formula, data = train_data, method = "ranger",
