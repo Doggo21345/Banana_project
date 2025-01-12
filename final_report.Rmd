@@ -20,7 +20,8 @@ library(flexdashboard)
 library(ggplot2)
 library(plotly)
 library(tidyverse)
-library(DT)
+library(broom)
+
 
 
 
@@ -39,13 +40,8 @@ by_time_long <- by_time %>%
                names_to = "metric", 
                values_to = "value")
 
-anova_results <- data.frame(
-  Term = c("Intercept", "Time Period", "Residuals"),
-  SumSq = c(50.23, 15.76, 34.01),
-  MeanSq = c(50.23, 7.88, 1.24),
-  FValue = c(40.65, 6.36, NA),
-  PrValue = c("<0.001", "0.014", NA)
-)
+
+
 
 ```
 ## Dashboard {.tabset}
@@ -144,39 +140,47 @@ time_1 <- ggplot(by_time_long, aes(x = time_period, y = value, fill = metric)) +
     axis.title.y = element_text(face = "bold", size = 12, color = "#008080"),
     axis.text.y = element_text(color = "black"),
     panel.background = element_rect(fill = "transparent", color = NA),
-    plot.background = element_rect(fill = "transparent", color = NA)  
+    plot.background = element_rect(fill = "transparent", color = NA),
+    legend.background = element_rect(fill = "transparent", color = NA), 
+    legend.text = element_text(color = "white", size = 12)
   )
 vis_time_1 <- ggplotly(time_1)
 vis_time_1
 ```
 
-####ChartC
+####ANOVA Table
 ```{r}
-DT::datatable(anova_results, 
-              options = list(pageLength = 5, 
-                             autoWidth = TRUE, 
-                             dom = 't'),  # Removes search and pagination if you only want the table
-              rownames = FALSE)
-datatable(anova_results, options = list(pageLength = 5, autoWidth = TRUE)) %>%
-  formatStyle(
-    columns = "PrValue",  # Apply styling to the "PrValue" column
-    color = styleEqual(
-      levels = c("<0.001", "0.014", NA),  # Match specific values
-      values = c("red", "blue", "gray")   # Corresponding colors
-    )
-  ) %>%
-  formatStyle(
-    "Term", 
-    color = "purple",                     # Change color for the entire "Term" column
-    fontWeight = "bold"                   # Make the text bold
-  )
+anova_results <- aov(bananas_consumed ~ time_period, data = Consumption_Log)
+anova_df <- tidy(anova_results)
+knitr::kable(anova_df)
 ```
 
 
 
-####Chart B
+####Tukey's post doc test to see what was different 
 ```{r}
-tukey <- plot(TukeyHSD(aov(bananas_consumed ~ time_period, data = Consumption_Log)))
-vistime_2 <-  ggplotly(tukey)
+tukey_results <- tidy(TukeyHSD(aov(bananas_consumed ~ time_period, data = Consumption_Log)))
+tukey_plot <- ggplot(tukey_results, aes(x = contrast, y = estimate)) +
+  geom_point(size = 3, color = "white") +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, color = "white") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "white") +
+  coord_flip() +
+  labs(
+    title = "Tukey's HSD Test Results",
+    x = "Comparison of time differnces ",
+    y = "Mean Difference"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.background = element_rect(fill = "black", color = NA),
+    plot.background = element_rect(fill = "black", color = NA),
+    panel.grid.major = element_line(color = "gray"),
+    panel.grid.minor = element_line(color = "darkgray"),
+    axis.title = element_text(color = "white"),
+    axis.text = element_text(color = "white"),
+    plot.title = element_text(color = "white", hjust = 0.5)
+  )
+
+vistime_2 <- ggplotly(tukey_plot)
 vistime_2
 ```

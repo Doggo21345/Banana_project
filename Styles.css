@@ -1,0 +1,12 @@
+/* Custom CSS to make the second tab larger */
+.tabset > .tab:nth-child(2) {
+  font-size: 1.5em;  /* Larger font size */
+  padding: 30px;     /* More padding around content */
+  background-color: #2b2b2b; /* Optional background color */
+}
+
+/* Optional: You can target the first tab as well if needed */
+.tabset > .tab:nth-child(1) {
+  font-size: 1em;  /* Default font size for the first tab */
+  padding: 20px;    /* Default padding */
+}
