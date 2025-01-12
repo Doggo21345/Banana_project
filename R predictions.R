@@ -2,16 +2,15 @@
 library(caret)
 library(randomForest)
 library(ggplot2)
-library(dplyr)
+library(tidyverse)
 
 # Fine-tune Random Forest
 set.seed(123)
 rf_grid <- expand.grid( #these are alll lists of hpyer paremeters that I set up potential combinations of and then are tested inside of the training model below 
-  mtry = c(2, 3, 4),  # this is th
-  splitrule = c("variance"), #for a continous random variable we wan to reduce the total amount of varaince that is present in this so 
-  min.node.size = c(5, 10, 15)  
+  mtry = c(2, 3, 4),  # this is the variable that picke the amount of like variables from the model that will be calculated so the ones that are more advanced I.E that have more variables will be ubject to overfit while the smaller ones might not yield the most amount of resuslts 
+  splitrule = c("variance"), #for a continous random variable we wan to reduce the total amount of varaince that is present in this so we use the variance splitrule to make sure to reduce that as much as possible 
+  min.node.size = c(5, 10, 15)  #this tests the different sizes of the nodes to make sure that each tree has the optimal amount of observations for accuracy. 
 )
-
 
 rf_model_tuned <- train(
   formula, data = train_data, method = "ranger",
@@ -25,10 +24,10 @@ rf_tuned_rmse <- RMSE(rf_tuned_preds, test_data_lol$bananas_consumed)
 
 # Fine-tune Gradient Boosting using caret's gbm method
 gbm_grid <- expand.grid(
-  interaction.depth = c(3, 5, 7),  # Tree depth
-  n.trees = c(50, 100, 150),       # Number of trees
-  shrinkage = c(0.01, 0.1),        # Learning rate
-  n.minobsinnode = c(5, 10)        # Minimum number of observations in terminal nodes
+  interaction.depth = c(3, 5, 7),  # Tree depth which is basivally how far the decision tree is when it comes to how many bannas are actually consumed the tradeoff with these is that the deeper the tree is the less observations it will have per tree but then as a result it will also be subject to less overfitting vice versa is also true
+  n.trees = c(50, 100, 150),       # Number of trees basically the 
+  shrinkage = c(0.01, 0.1),        # Learning rate which is how long it will take the model to learn from the past decision tree nodes so gradient boosters are constantly revaulating the weight it places on each tree due to the last ones mistakes but this variables can deicde how much the results of each one of those really matter and then tests which one of them would be best 
+  n.minobsinnode = c(5, 10)        # Minimum number of observations in terminal nodes which basically syas how much data should I use in this model and how diverse can I get
 )
 
 gbm_model_tuned <- train(
@@ -41,13 +40,13 @@ gbm_model_tuned <- train(
 gbm_tuned_preds <- predict(gbm_model_tuned, test_data_lol)
 gbm_tuned_rmse <- RMSE(gbm_tuned_preds, test_data_lol$bananas_consumed)
 
-# AdaBoost-like model using gbm
-# Simulating AdaBoost effect by focusing on high tree counts and low learning rates
+
+# Simulating AdaBoost effect by focusing on high tree counts and low learning rates the ada boost package wouldn't load :(
 ada_grid <- expand.grid(
-  interaction.depth = c(1, 2),      # Shallow trees for boosting
-  n.trees = c(200, 300),            # Higher number of trees
-  shrinkage = c(0.01),              # Lower learning rate
-  n.minobsinnode = c(5)             # Minimum number of terminal observations
+  interaction.depth = c(1, 2),      
+  n.trees = c(200, 300),            
+  shrinkage = c(0.01),              
+  n.minobsinnode = c(5)             
 )
 
 ada_model <- train(
@@ -73,8 +72,14 @@ ggplot(results_thing, aes(x = Model, y = RMSE, fill = Model)) +
   labs(
     title = "Model Performance Comparison",
     y = "Root Mean Square Error (RMSE)",
-    x = "Model"
-  ) 
+    x = "Model", 
+    fill = "Legend" 
+  ) + 
+  theme(
+    plot.title = element_text(face = "bold", colour = "blue", size = 16, hjust = 0.5), 
+    axis.title = element_text(face = "bold", colour = "darkgreen", size = 10)
+  )
+
   
 
 # Prediction vs Actual for all Models
@@ -87,7 +92,7 @@ test_data_lol <- test_data %>%
 test_data_lol <- test_data_lol %>%
   mutate(row_index = row_number())
 
-
+#did not work had to go back and manually rebname everything i od not know why the recode value did not work 
 test_data_longer <-  test_data_lol %>%  
   mutate(row_index = row_numbe ()) %>%  
   select(row_index, bananas_consumed, rf_preds, gbm_preds, ada_preds) %>%
@@ -116,7 +121,6 @@ test_data_long <- test_data_lol %>%
     values_to = "Consumption"
   ) %>%
   mutate(
-    # Recode the Model values to match the correct model names
     Model = case_when(
       Model == "bananas_consumed" ~ "Actual",
       Model == "rf_preds" ~ "Random Forest",
@@ -126,7 +130,7 @@ test_data_long <- test_data_lol %>%
     )
   )
 
-# Create the plot with faceting
+#faceted plot which is much better looking 
 ggplot(test_data_long, aes(x = row_index, y = Consumption, color = Model)) +
   geom_line(size = 1) +
   facet_wrap(~ Model, scales = "free_y") +
@@ -137,13 +141,13 @@ ggplot(test_data_long, aes(x = row_index, y = Consumption, color = Model)) +
     color = "Legend"
   ) +
   theme_minimal() +
-  theme(legend.position = "bottom")  # Optional: Adjust legend position
+  theme(legend.position = "bottom")  
 
 
 ggplot(test_data)
   
 
-
+#ewwwww graph
 ggplot(test_data_lol, aes(x = row_index)) +
   geom_line(aes(y = bananas_consumed, color = "Actual"), size = 1) +
   geom_line(aes(y = rf_preds, color = "Random Forest"), linetype = "dashed", size = 1) +
@@ -187,14 +191,8 @@ next_week_predictions <- next_week %>%
     ada_preds = predict(ada_model, newdata = next_week)
   )
 
-# View the predictions for the next week
-head(next_week_predictions)
 
-# Plot the predictions for next week
-next_week_predictions <- next_week_predictions %>%
-  mutate(row_index = seq_along(rf_preds))  # Create a row_index for plotting
 
-# Now plot
 
   
   # Reshape the data into long format with a new Model column

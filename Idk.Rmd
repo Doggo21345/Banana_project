@@ -1,0 +1,68 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(ggplot2)
+library(plotly)
+library(tidyverse)
+
+
+
+
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+banana_plot <- ggplot(consumption_date, aes(x = as.Date(date_id), y = total_bananas)) +
+  geom_line(color = "blue", size = 1) + 
+  geom_point(color = "orange", size = 2, alpha = 0.6) +  
+  facet_wrap(~is_weekend, labeller = as_labeller(c(`0` = "Non-Weekend", `1` = "Weekend"))) +
+  scale_y_continuous(
+    limits = c(0, 20),  
+    breaks = seq(0, 20, by = 5)  
+  ) +
+  labs(title = "Daily Banana Consumption Over Time",
+       x = "Date",
+       y = "Total Bananas Consumed") +
+  theme_dark() +
+  theme(
+    panel.grid.major = element_line(color = "lightgrey", size = 0.5),
+    panel.grid.minor = element_blank(),
+    strip.background = element_rect(fill = "lightblue", color = "darkblue"),
+    strip.text = element_text(color = "white", face = "bold"),
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title.x = element_text(face = "bold", size = 12),
+    axis.title.y = element_text(face = "bold", size = 12),
+    axis.text.y = element_text(color = "black") 
+  )
+
+interactive_plot <- ggplotly(banana_plot)
+interactive_plot
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+
+```
+
+### Chart C
+
+```{r}
+
+```
+

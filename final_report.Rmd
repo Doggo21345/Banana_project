@@ -1,0 +1,182 @@
+---
+title: "Interactive Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    theme:
+      version: 4
+      bg: "#101010"
+      fg: "#FDF7F7" 
+      primary: "#ED79F9"
+      navbar-bg: "#3ADAC6"
+      base_font: 
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(shiny)
+library(flexdashboard)
+library(ggplot2)
+library(plotly)
+library(tidyverse)
+library(DT)
+
+
+
+consumption_date <- read.csv("~/Banana_project/consumption_date.csv")
+consumption_traffic <-  read_csv("~/Banana_project/consumption_traffic.csv")
+Consumption_Log <- read_csv("~/Banana_project/consumption_log.csv")
+by_time <- consumption_traffic %>% 
+  group_by(time_period) %>% 
+  summarize(
+    total_bananas = sum(bananas_consumed, na.rm = TRUE), 
+    avg_bananas = mean(bananas_consumed, na.rm = TRUE)   
+  )
+
+by_time_long <- by_time %>% 
+  pivot_longer(cols = c(total_bananas, avg_bananas), 
+               names_to = "metric", 
+               values_to = "value")
+
+anova_results <- data.frame(
+  Term = c("Intercept", "Time Period", "Residuals"),
+  SumSq = c(50.23, 15.76, 34.01),
+  MeanSq = c(50.23, 7.88, 1.24),
+  FValue = c(40.65, 6.36, NA),
+  PrValue = c("<0.001", "0.014", NA)
+)
+
+```
+## Dashboard {.tabset}
+
+### Tab 1: Daily Trend
+
+
+
+#### Chart A
+
+```{r}
+
+banana_plot <- ggplot(consumption_date, aes(x = as.Date(date_id), y = total_bananas)) +
+  geom_line(color = "blue", size = 1) + 
+  geom_point(color = "orange", size = 2, alpha = 0.6) +  
+  facet_wrap(~is_weekend, labeller = as_labeller(c(`0` = "Non-Weekend", `1` = "Weekend"))) +
+  scale_y_continuous(
+    limits = c(0, 20),  
+    breaks = seq(0, 20, by = 5)  
+  ) +
+  labs(title = "Daily Banana Consumption Over Time",
+       x = "Date",
+       y = "Total Bananas Consumed") +
+  theme_dark() +
+  theme(
+    panel.grid.major = element_line(color = "lightgrey", size = 0.5),
+    panel.grid.minor = element_blank(),
+    strip.background = element_rect(fill = "lightblue", color = "darkblue"),
+    strip.text = element_text(color = "white", face = "bold"),
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title.x = element_text(face = "bold", size = 12),
+    axis.title.y = element_text(face = "bold", size = 12),
+    axis.text.y = element_text(color = "white"),
+     panel.background = element_rect(fill = "transparent", color = NA),  
+    plot.background = element_rect(fill = "transparent", color = NA)   
+  )
+
+interactive_plot <- ggplotly(banana_plot)
+interactive_plot
+
+
+```
+
+#### Chart B
+
+```{r}
+weeeknd_final <-  ggplot(consumption_date, aes(x = as.factor(is_weekend), y = total_bananas, fill = as.factor(is_weekend))) +
+  geom_violin(trim = FALSE, alpha = 0.5) +
+  geom_boxplot(width = 0.1) +
+  labs(
+    title = "Distribution of Banana Consumption: Weekdays vs. Weekends",
+    x = "Is Weekend (0 = Weekday, 1 = Weekend)",
+    y = "Total Bananas Consumed"
+  ) +
+  theme_minimal() +
+  theme(
+     legend.position = "none",
+     panel.background = element_rect(fill = "transparent", color = NA),  
+    plot.background = element_rect(fill = "transparent", color = NA),
+    axis.title = element_text(color = "white"),
+    axis.text = element_text(color = "#008080", size = 12)
+  )
+
+weekend_interactive <-  ggplotly(weeeknd_final)
+renderPlotly({
+  weekend_interactive
+})
+
+```
+### Tab 2:Whether time period effects the CONSUMPTION of bananas 
+
+Column {.sidebar}
+
+```{r}
+selectInput("weekend", label= "select whether it is a weekend or not ", choices = c(0,1))
+```
+-------------------------------------------------
+#### Chart A
+```{r}
+time_1 <- ggplot(by_time_long, aes(x = time_period, y = value, fill = metric)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~metric, scales = "free") + 
+  labs(
+    title = "Total vs. Average Bananas Consumed per Time Period",
+    x = "Time Period",
+    y = "Value"
+  ) +
+  theme_dark() +
+  theme(
+    panel.grid.major = element_line(color = "lightgrey", size = 0.5),
+    panel.grid.minor = element_blank(),
+    strip.background = element_rect(fill = "lightblue", color = "darkblue"),
+    strip.text = element_text(color = "white", face = "bold"),
+    plot.title = element_text(face = "bold", hjust = 0.5),
+    axis.title.x = element_text(face = "bold", size = 12),
+    axis.title.y = element_text(face = "bold", size = 12, color = "#008080"),
+    axis.text.y = element_text(color = "black"),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    plot.background = element_rect(fill = "transparent", color = NA)  
+  )
+vis_time_1 <- ggplotly(time_1)
+vis_time_1
+```
+
+####ChartC
+```{r}
+DT::datatable(anova_results, 
+              options = list(pageLength = 5, 
+                             autoWidth = TRUE, 
+                             dom = 't'),  # Removes search and pagination if you only want the table
+              rownames = FALSE)
+datatable(anova_results, options = list(pageLength = 5, autoWidth = TRUE)) %>%
+  formatStyle(
+    columns = "PrValue",  # Apply styling to the "PrValue" column
+    color = styleEqual(
+      levels = c("<0.001", "0.014", NA),  # Match specific values
+      values = c("red", "blue", "gray")   # Corresponding colors
+    )
+  ) %>%
+  formatStyle(
+    "Term", 
+    color = "purple",                     # Change color for the entire "Term" column
+    fontWeight = "bold"                   # Make the text bold
+  )
+```
+
+
+
+####Chart B
+```{r}
+tukey <- plot(TukeyHSD(aov(bananas_consumed ~ time_period, data = Consumption_Log)))
+vistime_2 <-  ggplotly(tukey)
+vistime_2
+```
