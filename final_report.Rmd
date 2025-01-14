@@ -12,15 +12,12 @@ output:
     orientation: columns
     vertical_layout: fill
 runtime: shiny
+css: "Styles.css"  
 ---
 
 ```{r setup, include=FALSE}
-library(shiny)
-library(flexdashboard)
-library(ggplot2)
-library(plotly)
-library(tidyverse)
-library(broom)
+pacman::p_load(tidyverse, ggplot2, gganimate, flexdashboard, mosaic, moderndive, effectsize, modelr, rsample, car,ggridges,plotly,broom,shiny)
+
 
 
 
@@ -183,4 +180,43 @@ tukey_plot <- ggplot(tukey_results, aes(x = contrast, y = estimate)) +
 
 vistime_2 <- ggplotly(tukey_plot)
 vistime_2
+```
+
+### Tab 3: Ripeness optimiza1tion 
+
+#### New Larger Content
+
+```{r}
+Consumption_Log$ripeness <- as.factor(Consumption_Log$ripeness)
+
+ripeness_labels <- c(
+  `1` = "Ripeness Level 1: Least Ripe",
+  `2` = "Ripeness Level 2: Slightly Ripe",
+  `3` = "Ripeness Level 3: Moderately Ripe",
+  `4` = "Ripeness Level 4: Very Ripe",
+  `5` = "Ripeness Level 5: Fully Ripe"
+)
+
+
+density_plot <- ggplot(Consumption_Log, aes(x = bananas_consumed, fill = ripeness)) +
+  geom_density(alpha = 0.7, color = "blue") +
+  facet_wrap(~ ripeness, scales = "free_y", labeller = as_labeller(ripeness_labels)) +
+  theme_minimal() +
+  labs(title = "Density of Banana Consumption by Ripeness",
+       x = "Bananas Consumed",
+       y = "Density") +
+  scale_fill_viridis_d() +
+  theme(panel.background = element_rect(fill = "transparent"),
+        legend.position = "None",
+        plot.background = element_rect(fill = "transparent", color = NA),
+        axis.title = element_text(color = "white"),
+        axis.ticks = element_line(color = "white"),
+        axis.text = element_text(color = "white", size = 12, face = "bold"), 
+        legend.text = element_text(color = "white", size = 14, face = "bold"), 
+  
+  )
+
+
+density_plotly <- ggplotly(density_plot)
+density_plotly
 ```

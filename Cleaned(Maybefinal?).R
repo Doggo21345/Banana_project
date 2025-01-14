@@ -110,6 +110,8 @@ summary(anova_result)
 TukeyHSD(aov(bananas_consumed ~ time_period, data = Consumption_Log))
 plot(TukeyHSD(aov(bananas_consumed ~ time_period, data = Consumption_Log)))
 
+install.packages("broom")
+
 #ripeness optimization with the heatmap of ripeness s it compares to how many I actually eat
 # Calculate total bananas by ripeness BEFORE grouping by time_period
 total_bananas_data <- bananas_thrown_away %>%
