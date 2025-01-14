@@ -159,6 +159,8 @@ Pie_chart_thrown <- bananas_thrown_away %>%
     throwaway_rate = (thrown_count / total_count) * 100
   )
 
+
+
 faceted_data <-  Pie_chart_thrown %>%  
   pivot_longer(
     cols = c(thrown_count, throwaway_rate), 
@@ -168,7 +170,7 @@ faceted_data <-  Pie_chart_thrown %>%
 
 
 
-view(Pie_chart_thrown)
+
 
 ggplot(faceted_data, aes(x = "", y = value, fill = factor(ripeness))) +
   geom_bar(stat = "identity", width = 1) +
@@ -197,8 +199,7 @@ ggplot(faceted_data, aes(x = "", y = value, fill = factor(ripeness))) +
     )
   )
 
-
-
+write.csv(bananas_thrown_away)
 #I will use this to determine whether or not the ripeness of bannas has anything to do with the consumption 
 
 

@@ -25,6 +25,7 @@ pacman::p_load(tidyverse, ggplot2, gganimate, flexdashboard, mosaic, moderndive,
 consumption_date <- read.csv("~/Banana_project/consumption_date.csv")
 consumption_traffic <-  read_csv("~/Banana_project/consumption_traffic.csv")
 Consumption_Log <- read_csv("~/Banana_project/consumption_log.csv")
+bananas_thrown_away <- read_csv("~/Banana_project/bananas_thrown_away.csv")
 by_time <- consumption_traffic %>% 
   group_by(time_period) %>% 
   summarize(
@@ -225,4 +226,59 @@ density_plotly
 kruskal_test <-  kruskal.test(bananas_consumed ~ ripeness, data = Consumption_Log)
 kruskal_df <- tidy(kruskal_test)
 knitr::kable(kruskal_df)
+```
+
+### Tab 4:
+```{r}
+Pie_chart_thrown <- bananas_thrown_away %>% 
+  group_by(ripeness) %>%
+  summarize(
+    thrown_count = sum(thrown_away),
+    total_count = n()
+  ) %>%
+  mutate(
+    throwaway_rate = (thrown_count / total_count) * 100
+  )
+
+ripeness_labels <- c(
+  `1` = "Ripeness Level 1: Least Ripe",
+  `2` = "Ripeness Level 2: Slightly Ripe",
+  `3` = "Ripeness Level 3: Moderately Ripe",
+  `4` = "Ripeness Level 4: Very Ripe",
+  `5` = "Ripeness Level 5: Fully Ripe"
+)
+
+faceted_data <-  Pie_chart_thrown %>%  
+  pivot_longer(
+    cols = c(thrown_count, throwaway_rate), 
+    names_to = "metric", 
+    values_to ="value"
+  )
+filtered_data <- faceted_data %>%
+  filter(!(ripeness == "1" & value == 0))
+
+
+
+bar <- ggplot(aes(ripeness, metric), data = filtered_data) + 
+  geom_bar(stat = "identity") + 
+  facet_wrap(~metric, scales = "free_y", labeller = as_labeller(ripeness_labels)) + 
+  labs(
+    title = "Bananas Thrown Away by Ripeness", 
+    x = "Ripeness Level"
+  ) + 
+  theme(
+    panel.background = element_rect(fill = "transparent"),
+    legend.position = "none",
+    plot.background = element_rect(fill = "transparent", color = NA),
+    axis.title = element_text(color = "white"),
+    axis.ticks = element_line(color = "white"),
+    axis.text = element_text(color = "white", size = 12, face = "bold"), 
+    legend.text = element_text(color = "white", size = 14, face = "bold")
+  )
+
+
+bar_plot <- ggplotly(bar)
+
+bar_plot
+
 ```
