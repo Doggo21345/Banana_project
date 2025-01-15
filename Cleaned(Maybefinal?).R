@@ -199,6 +199,34 @@ ggplot(faceted_data, aes(x = "", y = value, fill = factor(ripeness))) +
     )
   )
 
+pie_plot <- ggplot(faceted_data, aes(x = "", y = value, fill = factor(ripeness))) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  facet_wrap(
+    ~ metric, 
+    labeller = as_labeller(
+      c(
+        "thrown_count" = "Count of Bananas Thrown Away",
+        "throwaway_rate" = "Percentage of Bananas Thrown Away"
+      )
+    )
+  ) +
+  labs(
+    title = "Banana Throwaway Analysis by Ripeness",
+    fill = "Ripeness Level"
+  ) +
+  theme_void() +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(
+      size = 15,
+      face = "bold",
+      hjust = 0.5
+    )
+  )
+pie_plot
+
+
 write.csv(bananas_thrown_away)
 #I will use this to determine whether or not the ripeness of bannas has anything to do with the consumption 
 
