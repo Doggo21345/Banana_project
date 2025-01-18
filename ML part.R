@@ -8,7 +8,6 @@ library(xgboost)
 library(nnet)
 library(dplyr)
 pacman::p_load(tidyverse, ggplot2, gganimate, flexdashboard, mosaic, moderndive, effectsize, modelr, rsample, car)
-install.packages("xgboost")
 library(xg)
 
 consumption_date <- consumption_date %>%
@@ -153,8 +152,8 @@ print(results)
 
 rf_model_tuned <- train(
   formula, data = train_data, method = "rf",
-  tuneGrid = expand.grid(mtry = sqrt(ncol(train_data) - 1)), # Default mtry tuning
-  ntree = 500, # Increase the number of trees
+  tuneGrid = expand.grid(mtry = sqrt(ncol(train_data) - 1)), 
+  ntree = 500, 
   trControl = trainControl(method = "cv", number = 10)
 )
 rf_tuned_preds <- predict(rf_model_tuned, test_data)
@@ -162,7 +161,7 @@ rf_tuned_rmse <- RMSE(rf_tuned_preds, test_data$bananas_consumed)
 
 
 rmse_data <- data.frame(
-  Model = c("Random Forest (Original)", "Gradient Boosting", "Random Forest (Tuned)"),
+  Model = c("Adaboost", "Gradient Boosting", "Random Forest"),
   RMSE = c(rf_rmse, xgb_rmse, rf_tuned_rmse)
 )
 
@@ -175,7 +174,10 @@ ggplot(rmse_data, aes(x = Model, y = RMSE, fill = Model)) +
     y = "Root Mean Square Error (RMSE)",
     x = "Model"
   ) +
-  scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb"))
+  scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb")) + 
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16, color = "red"), 
+  )
 
 
 

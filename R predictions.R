@@ -4,7 +4,7 @@ library(randomForest)
 library(ggplot2)
 library(tidyverse)
 
-# Fine-tune Random Forest
+
 set.seed(123)
 rf_grid <- expand.grid( #these are alll lists of hpyer paremeters that I set up potential combinations of and then are tested inside of the training model below 
   mtry = c(2, 3, 4),  # this is the variable that picke the amount of like variables from the model that will be calculated so the ones that are more advanced I.E that have more variables will be ubject to overfit while the smaller ones might not yield the most amount of resuslts 
@@ -92,24 +92,7 @@ test_data_lol <- test_data %>%
 test_data_lol <- test_data_lol %>%
   mutate(row_index = row_number())
 
-#did not work had to go back and manually rebname everything i od not know why the recode value did not work 
-test_data_longer <-  test_data_lol %>%  
-  mutate(row_index = row_numbe ()) %>%  
-  select(row_index, bananas_consumed, rf_preds, gbm_preds, ada_preds) %>%
-  pivot_longer(
-    cols = c(bananas_consumed, rf_preds, gbm_preds, ada_preds),
-    names_to = "Models",
-    value_to = "Consumption",
-  ) %>%  
-  mutate (
-    Model = recode(
-      Model,
-      bananas_consumed = "Actual",
-      rf_preds = "Random Forest",
-      gbm_preds = "Gradient Boosting",
-      ada_preds = "AdaBoost-Like"
-    )
-  )
+
   
 # Reshape the data into long format with a new Model column
 test_data_long <- test_data_lol %>%
@@ -205,12 +188,11 @@ next_week_predictions <- next_week %>%
       values_to = "Consumption"
     ) %>%
     mutate(
-      # Recode the Model values to match the correct model names
       Model = case_when(
         Model == "rf_preds" ~ "Random Forest",
         Model == "gbm_preds" ~ "Gradient Boosting",
         Model == "ada_preds" ~ "AdaBoost-Like",
-        TRUE ~ Model  # Default case to retain any other values (if applicable)
+        TRUE ~ Model  
       )
     )
   
@@ -228,16 +210,7 @@ next_week_predictions <- next_week %>%
     theme_minimal()
   
 
-ggplot(next_week_predictions_long, aes(x = row_index, y = metric, color = Model)) +
-  geom_line(size = 1) + 
-  facet_wrap(~ Model, scales = "free_y") + 
-  labs(
-    title = "Predictions for what I should eat for next week",
-    x = "Index",
-    y = "Bananas Consumed",
-    color = "Legend"
-  ) + 
-  theme_minimal()
+
 
 
   
