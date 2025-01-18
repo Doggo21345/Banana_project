@@ -194,12 +194,6 @@ renderPlotly({
 ```
 ### Tab 2:Timed period
 
-Column {.sidebar}
-
-```{r}
-selectInput("weekend", label= "select whether it is a weekend or not ", choices = c(0,1))
-```
--------------------------------------------------
 #### Chart A
 ```{r}
 time_1 <- ggplot(by_time_long, aes(x = time_period, y = value, fill = metric)) +
@@ -408,6 +402,62 @@ bar_plot
 
 ```
 
-#### Pie chart
-```{r}
-```
+
+### Tab 4: The dreaded ML part
+*Welcome to the project dashboard for banana consumption optimization! This dashboard is designed to document the process, from data collection to insights, visualizations, and actionable outcomes.*
+
+
+#### Table of Contents
+- [Data Preparation](#data-preparation)
+- [Cross-Validation](#cross-validation)
+- [Models Used](#models-used)
+- [Performance](#performance)
+
+---
+
+#### Data Preparation {data-preparation}
+To begin, all categorical variables were one-hot encoded, converting them into numerical dummy variables. This ensured compatibility with machine learning models, particularly those requiring numerical inputs (e.g., Linear Regression and Support Vector Machines).  
+- Encoding avoided the risk of the models inferring a false hierarchy from sequential integer labels.  
+- Afterward, the dataset was split into **80% training** and **20% testing** to evaluate model performance on unseen data.  
+- A dynamic formula was created to define the dependent variable (`bananas_consumed`) and all independent variables (the dummy variables). This approach standardized the modeling process across all machine learning models.
+
+[Back to Top.](#The dreaded ML part)
+
+---
+
+#### Cross-Validation {cross-validation}
+A **10-fold cross-validation** strategy was used to train and validate the models.  
+- The data was divided into 10 subsets: during each iteration, 9 subsets were used for training, while the remaining subset was used for testing.  
+- Each subset served as a testing set exactly once, ensuring comprehensive evaluation of model performance.  
+- The average performance across all folds provided a reliable estimate of how each model would perform on unseen data.
+
+[Back to Top.](#The dreaded ML part)
+
+---
+
+#### Models Used {models-used}
+The following machine learning models were trained using the prepared dataset:  
+1. **Linear Regression**: A baseline model to identify linear relationships between variables.  
+2. **Multi-Linear Regression**: Extends Linear Regression by incorporating multiple predictors.  
+3. **Random Forest**: An ensemble learning method that constructs multiple decision trees and averages their predictions.  
+4. **Gradient Boosting**: Focuses on sequentially improving the model by minimizing residual errors in each iteration.  
+5. **Neural Network**: A flexible model capable of capturing complex, nonlinear relationships in the data.
+
+These models were trained using the dynamic formula created earlier, ensuring consistent feature selection across all implementations.
+
+[Back to Top.](#The dreaded ML part)
+
+---
+
+#### Performance {performance}
+To evaluate the models, metrics such as **Root Mean Squared Error (RMSE)** and **R-squared (R²)** were calculated:  
+- **RMSE** quantified the prediction error, with lower values indicating better performance.  
+- **R-squared (R²)** measured how well the models captured variance in banana consumption.  
+- Cross-validation results were summarized using boxplots to visualize performance consistency.  
+
+**Key Insights**:
+- The **Random Forest** and **Gradient Boosting** models outperformed others in terms of accuracy and error minimization.  
+- Neural networks provided flexibility but required careful tuning to optimize performance.  
+- Predictions from the best-performing models closely matched actual consumption trends, as seen in scatterplots of predicted vs. actual values.
+
+[Back to Top.](#ml-part)
