@@ -44,40 +44,49 @@ by_time_long <- by_time %>%
 ```
 
 ## Dashboard {.tabset}
+---
+title: "Banana Consumption Optimization Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+---
 
-### Homepage: The Entire Story 
-*Welcome to the project dashboard for banana consumption optimization! This dashboard is designed to document the process, from data collection to insights, visualizations, and actionable outcomes.*
+### Banana Consumption Optimization
 
-#### Table of Contents:
-- [Quick summary of my entire project](#summary)
-- [Core Problem and Secondary Questions](#problem-statement)
-- [Key Metrics and Visualizations](#key-metrics)
-- [Database Schema and Design](#database-schema)
-- [Sample Period and Analytical Process](#sample-period)
+Welcome to the project dashboard for banana consumption optimization! This dashboard is designed to document the process, from data collection to insights, visualizations, and actionable outcomes.
 
 ---
 
-### My initial thought and summary of the whole project {#summary}
-*I initially planned to use SQL to keep track of everything and make sure tht it worked alright because I was learning it at the time. However, Google Sheets proved to be much easier and more accessible so I tracked most of my bananna consumption inside of that *
+#### Table of Contents:
+- [Quick Summary](#summary)
+- [Core Problem and Questions](#problem-statement)
+- [Key Metrics and Visualizations](#key-metrics)
+- [Database Schema and Design](#database-schema)
 
+---
 
-#### Steps:
+<a id="summary"></a>
+#### Quick Summary
+
+*I initially planned to use SQL to track everything because I was learning it at the time. However, Google Sheets proved to be much easier and more accessible, so I tracked most of my banana consumption there.*
+
+**Steps:**
 1. Define the core problem statement.
 2. Identify key factors influencing banana consumption.
 
 ---
 
-### Core Problem Statement {#problem-statement}
-#### Objective:
-- Structure and store data efficiently for analysis in **R** and have enough data to perform with statistical tests as well as **machine learning models**
-- Ultimately I decided to built this dashboard with **Flexdashobard** as well the **shiny**
+<a id="problem-statement"></a>
+#### Core Problem and Questions
 
+**Objective:**
+- Structure and store data efficiently for analysis in **R** and collect enough data to perform statistical tests and **machine learning models**.
+- Build this dashboard using **Flexdashboard** and **Shiny**.
 
+**Main Question:**
+What is the optimal number of bananas to take each day to ensure no bananas are wasted while also meeting daily consumption needs?
 
-#### Main Question:
-> **What is the optimal number of bananas to take each day to ensure no bananas are wasted while also meeting daily consumption needs?**
-
-#### Secondary Questions:
+**Secondary Questions:**
 - What factors (e.g., day of the week, crowd levels, restock schedules, ripeness) influence banana consumption patterns?
 - How does ripeness affect the likelihood of consumption or waste?
 - Are there specific times or days when taking bananas is more efficient to minimize waste and hunger?
@@ -85,8 +94,10 @@ by_time_long <- by_time %>%
 
 ---
 
-### Key Metrics and Visualizations {#key-metrics}
-#### Metrics:
+<a id="key-metrics"></a>
+#### Key Metrics and Visualizations
+
+**Metrics:**
 - **Ripeness**
 - **Date**
 - **Is_weekend**
@@ -94,36 +105,23 @@ by_time_long <- by_time %>%
 - **Time of day**
 - **Crowd levels**
 
-#### Visualizations:
+**Visualizations:**
 - **Bar charts** for daily consumption trends.
 - **Line charts** for ripeness vs. consumption.
 - **Heatmaps** to identify peak consumption times.
 
 ---
 
-### Database Schema and Design {#database-schema}
-#### Tables:
+<a id="database-schema"></a>
+#### Database Schema and Design
+
+**Tables:**
 1. **restock_schedule**: Tracks restocking events and ripeness levels.
 2. **consumption_log**: Records daily banana consumption (time, quantity, ripeness).
 3. **crowd_levels**: Captures peak hours and crowd patterns.
 
-#### Design Relationships:
-- Link tables on key fields (e.g., `date` and `time`) to enable queries that combine datasets for deeper insights.
-
----
-
-### Sample Period and Analytical Process {#sample-period}
-#### Sample Period:
-- **October**: The sample was limited to this month due to a lack of consistency during later weeks.
-
-#### Analytical Process:
-- **ERD Diagram**: [View Diagram](https://claude.site/artifacts/55ea6da5-dd04-4dda-8f25-7df26476609e)
-- **Steps**:
-  1. Calculate daily consumption averages.
-  2. Explore correlations between ripeness and waste.
-  3. Model predictive restocking strategies to optimize banana availability.
-
-
+**Design Relationships:**
+Link tables on key fields (e.g., `date` and `time`) to enable queries that combine datasets for deeper insights.
 
 
 
@@ -403,7 +401,7 @@ bar_plot
 ```
 
 
-### Tab 4: The dreaded ML part
+### Tab 4: The dreaded ML part {#ML_part}
 *Welcome to the project dashboard for banana consumption optimization! This dashboard is designed to document the process, from data collection to insights, visualizations, and actionable outcomes.*
 
 
@@ -415,13 +413,13 @@ bar_plot
 
 ---
 
-#### Data Preparation {data-preparation}
+#### Data Preparation {#data-preparation}
 To begin, all categorical variables were one-hot encoded, converting them into numerical dummy variables. This ensured compatibility with machine learning models, particularly those requiring numerical inputs (e.g., Linear Regression and Support Vector Machines).  
 - Encoding avoided the risk of the models inferring a false hierarchy from sequential integer labels.  
 - Afterward, the dataset was split into **80% training** and **20% testing** to evaluate model performance on unseen data.  
 - A dynamic formula was created to define the dependent variable (`bananas_consumed`) and all independent variables (the dummy variables). This approach standardized the modeling process across all machine learning models.
 
-[Back to Top.](#The dreaded ML part)
+[Back to Top.](#ML_part)
 
 ---
 
@@ -431,7 +429,7 @@ A **10-fold cross-validation** strategy was used to train and validate the model
 - Each subset served as a testing set exactly once, ensuring comprehensive evaluation of model performance.  
 - The average performance across all folds provided a reliable estimate of how each model would perform on unseen data.
 
-[Back to Top.](#The dreaded ML part)
+[Back to Top.](#ML_part)
 
 ---
 
@@ -445,7 +443,7 @@ The following machine learning models were trained using the prepared dataset:
 
 These models were trained using the dynamic formula created earlier, ensuring consistent feature selection across all implementations.
 
-[Back to Top.](#The dreaded ML part)
+[Back to Top.](#ML_part)
 
 ---
 
@@ -460,4 +458,4 @@ To evaluate the models, metrics such as **Root Mean Squared Error (RMSE)** and *
 - Neural networks provided flexibility but required careful tuning to optimize performance.  
 - Predictions from the best-performing models closely matched actual consumption trends, as seen in scatterplots of predicted vs. actual values.
 
-[Back to Top.](#ml-part)
+[Back to Top.](#ML_part)
