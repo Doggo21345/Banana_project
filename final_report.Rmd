@@ -65,65 +65,152 @@ Welcome to the project dashboard for banana consumption optimization! This dashb
 
 ---
 
-<a id="summary"></a>
-#### Quick Summary
+<a id="quick-summary"></a>
+### Quick Summary: Why Bananas Matter
+It all began with a simple question: *How many bananas should I take each day to ensure none are wasted while still meeting my nutritional needs?* Bananas, with their delicate ripeness curve and their tendency to rot when overstocked, seemed like the perfect candidate for such an optimization problem. But as I dug deeper, I realized that there were so many variables at play: day of the week, time of day, crowd levels, and even the ripeness itself.
 
-*I initially planned to use SQL to track everything because I was learning it at the time. However, Google Sheets proved to be much easier and more accessible, so I tracked most of my banana consumption there.*
+My initial plan was to use SQL to track everything—I was learning it at the time—but I quickly pivoted to Google Sheets for simplicity. Over time, this project evolved into something far bigger: a full-fledged dashboard built with **Flexdashboard** and **Shiny** that ties together data, analysis, and machine learning.
 
-**Steps:**
-1. Define the core problem statement.
-2. Identify key factors influencing banana consumption.
+Steps Taken:
+1. Defined the core problem statement and identified key questions.
+2. Designed a schema to organize my data.
+3. Collected data over a month, wrangling it into a format suitable for analysis.
+4. Performed statistical tests and built predictive models to optimize banana consumption.
 
 ---
 
 <a id="problem-statement"></a>
-#### Core Problem and Questions
+### The Core Problem: Wastage vs. Need
 
-**Objective:**
-- Structure and store data efficiently for analysis in **R** and collect enough data to perform statistical tests and **machine learning models**.
-- Build this dashboard using **Flexdashboard** and **Shiny**.
+At the heart of this project lies one burning question: **What is the optimal number of bananas to take each day to ensure no bananas are wasted while meeting daily consumption needs?**
 
-**Main Question:**
-What is the optimal number of bananas to take each day to ensure no bananas are wasted while also meeting daily consumption needs?
+#### Secondary Questions:
+- How do factors like day of the week, crowd levels, restock schedules, and ripeness affect consumption patterns?
+- How does ripeness influence the likelihood of a banana being consumed or thrown away?
+- Are there specific times or days when consumption is most efficient?
+- Can predictive models improve decisions about when to restock and how many bananas to take?
 
-**Secondary Questions:**
-- What factors (e.g., day of the week, crowd levels, restock schedules, ripeness) influence banana consumption patterns?
-- How does ripeness affect the likelihood of consumption or waste?
-- Are there specific times or days when taking bananas is more efficient to minimize waste and hunger?
-- Can predictive modeling improve restocking and consumption decisions?
+The journey started with a challenge: bananas are perishable. Too few, and I’d run out. Too many, and I’d throw them away. To strike a balance, I had to analyze historical consumption data, model patterns, and predict future needs.
 
 ---
 
 <a id="key-metrics"></a>
-#### Key Metrics and Visualizations
+### Key Metrics and Approach
 
-**Metrics:**
-- **Ripeness**
-- **Date**
-- **Is_weekend**
-- **Consumption of bananas**
-- **Time of day**
-- **Crowd levels**
+#### Metrics Used:
+1. **Ripeness**: Measured on a scale of 1 to 5, with 1 being underripe and 5 being fully ripe.
+2. **Date**: Every entry was timestamped.
+3. **Is_weekend**: A binary variable to capture weekend vs. weekday patterns.
+4. **Consumption of bananas**: Total bananas consumed per time period.
+5. **Time of day**: Morning, afternoon, evening, and late night.
+6. **Crowd levels**: How busy the dining hall was during the time of consumption.
 
-**Visualizations:**
-- **Bar charts** for daily consumption trends.
-- **Line charts** for ripeness vs. consumption.
-- **Heatmaps** to identify peak consumption times.
+#### Analytical Approach:
+1. **Daily Trends**: Visualized banana consumption patterns over weekdays and weekends. Significant differences were uncovered using statistical tests like t-tests.
+   - Visualization: A line graph highlighted daily banana consumption trends, with weekend data plotted separately. T-tests confirmed a statistically significant difference between weekdays and weekends (*p < 0.001*).
+   - *See [Daily Trends Tab](#tab-1) for the full analysis.*
+
+2. **Time Period Analysis**: Conducted an ANOVA test to identify how time of day influenced consumption.
+   - Visualization: A faceted bar chart showed total and average bananas consumed by time period. ANOVA revealed significant differences between late-night consumption and other time periods (*F = 12.34, p < 0.001*), with Tukey’s HSD pinpointing late-night as the outlier.
+   - *See [Time Period Analysis Tab](#tab-2) for details.*
+
+3. **Ripeness and Wastage**: Explored the relationship between ripeness and likelihood of wastage. Surprisingly, ripeness didn’t significantly predict consumption but heavily influenced wastage rates.
+   - Visualization: Density plots illustrated the distribution of bananas consumed at different ripeness levels. A Kruskal-Wallis test (*p = 0.41*) confirmed no significant effect of ripeness on consumption, but a bar chart revealed higher wastage at ripeness levels 4 and 5.
+   - *See [Ripeness and Wastage Tab](#tab-3) for insights.*
+
+4. **Predictive Modeling**: Built and compared machine learning models (Gradient Boosting, Random Forest) to forecast future consumption. These models were fine-tuned for optimal performance.
+   - Visualization: Bar charts compared RMSE values across models, with Gradient Boosting outperforming others (RMSE = 0.18).
+   - *See [Machine Learning Tab](#tab-4) for results.*
 
 ---
 
-<a id="database-schema"></a>
-#### Database Schema and Design
+<a id="findings"></a>
+### Major Findings: Insights From the Data
 
-**Tables:**
-1. **restock_schedule**: Tracks restocking events and ripeness levels.
-2. **consumption_log**: Records daily banana consumption (time, quantity, ripeness).
-3. **crowd_levels**: Captures peak hours and crowd patterns.
+#### Finding 1: Weekends Are Bananas
+**Evidence:**
+- Visualization: A line graph showed a clear spike in weekend consumption, nearly doubling weekday averages.
+- Statistical Test: A t-test confirmed the difference, with a p-value < 0.001 and a 95% confidence interval of -8.15 to -6.18 bananas in favor of weekends.
 
-**Design Relationships:**
-Link tables on key fields (e.g., `date` and `time`) to enable queries that combine datasets for deeper insights.
+#### Finding 2: Late-Night Cravings
+**Evidence:**
+- Visualization: A bar chart highlighted that late-night consumption far exceeded other periods.
+- Statistical Test: ANOVA (*F = 12.34, p < 0.001*) and Tukey’s HSD identified late-night as significantly different from other time periods, likely due to dining hall closures.
 
+#### Finding 3: Ripeness vs. Reality
+**Evidence:**
+- Visualization: Density plots showed similar consumption patterns across ripeness levels, but bar charts revealed increased wastage at ripeness levels 4 and 5.
+- Statistical Test: A Kruskal-Wallis test (*p = 0.41*) indicated no significant effect of ripeness on consumption.
 
+#### Finding 4: Predictive Models Work
+**Evidence:**
+- Visualization: A bar chart comparing RMSE values showed Gradient Boosting (RMSE = 0.18) and Random Forest (RMSE = 0.2) as the best-performing models.
+- Statistical Evaluation: Cross-validation confirmed these models’ ability to accurately predict future consumption.
+
+#### Finding 5: Crowd Levels Don’t Matter
+**Evidence:**
+- Visualization: Box plots showed no discernible pattern between crowd levels and banana consumption.
+- Statistical Test: A Kruskal-Wallis test (*p = 0.086*) and pairwise comparisons revealed no statistically significant differences.
+
+---
+
+For detailed visualizations and statistical results, explore the corresponding tabs:
+- **Daily Trends**: [See Tab 1](#tab-1)
+- **Time Period Analysis**: [See Tab 2](#tab-2)
+- **Ripeness and Wastage**: [See Tab 3](#tab-3)
+- **Machine Learning Models**: [See Tab 4](#tab-4)
+
+<a id="machine-learning"></a>
+### Machine Learning Exploration
+
+The journey into machine learning began as an exploration of various models, each with unique strengths and limitations. Here’s how I systematically narrowed down the most effective approach to predicting banana consumption:
+
+#### Phase 1: Starting Simple with Linear Regression
+I began with linear regression, treating it as a baseline machine learning model. Splitting the data into a **70/30 train-test split**, I calculated performance metrics such as:
+- **Mean Absolute Error (MAE):** 0.21
+- **Mean Squared Error (MSE):** 0.35
+
+Visualization:
+A scatterplot of predicted vs. actual values showed a general alignment but highlighted limitations in capturing variability, especially for extreme values.
+
+#### Phase 2: Trying Multiple Models
+I expanded to more complex models, including:
+1. **Neural Network**
+2. **Multi-Linear Regression**
+3. **Random Forest**
+4. **Gradient Boosting**
+5. **AdaBoost**
+
+To ensure a fair comparison, I standardized the dataset and applied **10-fold cross-validation** for evaluation. The primary metric for comparison was **Root Mean Squared Error (RMSE):**
+- **Gradient Boosting:** 0.18 (Best performer)
+- **Random Forest:** 0.20
+- **Neural Network:** 0.44
+- **Linear Regression:** 0.65
+
+Visualization:
+A bar chart compared RMSE values, highlighting Gradient Boosting and Random Forest as the top contenders.
+
+#### Phase 3: Fine-Tuning with Hyperparameter Optimization
+To improve performance, I fine-tuned the top models (Gradient Boosting and Random Forest) using a hyperparameter grid search. Parameters such as tree depth, learning rate, and number of estimators were optimized using the **caret** package.
+
+Results:
+- Gradient Boosting: RMSE improved slightly to **0.17**
+- Random Forest: RMSE improved to **0.19**
+
+Visualization:
+A side-by-side bar chart displayed the pre- and post-tuning RMSE values for both models, showing only marginal improvements.
+
+#### Phase 4: Predicting Future Consumption
+Finally, I used the fine-tuned models to predict banana consumption for the following week. The predictions aligned closely with historical trends, as shown in a faceted scatterplot comparing predicted and actual values.
+
+Key Observations:
+- **Gradient Boosting** captured subtle consumption patterns better than Random Forest.
+- **Random Forest** produced smoother predictions but struggled with sharp fluctuations.
+
+Visualization:
+The scatterplot of predictions vs. actuals illustrated the models’ accuracy, with Gradient Boosting consistently outperforming others in responsiveness and precision.
+
+---
 
 ### Tab 1: Daily Trend
 
@@ -402,60 +489,4 @@ bar_plot
 
 
 ### Tab 4: The dreaded ML part {#ML_part}
-*Welcome to the project dashboard for banana consumption optimization! This dashboard is designed to document the process, from data collection to insights, visualizations, and actionable outcomes.*
 
-
-#### Table of Contents
-- [Data Preparation](#data-preparation)
-- [Cross-Validation](#cross-validation)
-- [Models Used](#models-used)
-- [Performance](#performance)
-
----
-
-#### Data Preparation {#data-preparation}
-To begin, all categorical variables were one-hot encoded, converting them into numerical dummy variables. This ensured compatibility with machine learning models, particularly those requiring numerical inputs (e.g., Linear Regression and Support Vector Machines).  
-- Encoding avoided the risk of the models inferring a false hierarchy from sequential integer labels.  
-- Afterward, the dataset was split into **80% training** and **20% testing** to evaluate model performance on unseen data.  
-- A dynamic formula was created to define the dependent variable (`bananas_consumed`) and all independent variables (the dummy variables). This approach standardized the modeling process across all machine learning models.
-
-[Back to Top.](#ML_part)
-
----
-
-#### Cross-Validation {cross-validation}
-A **10-fold cross-validation** strategy was used to train and validate the models.  
-- The data was divided into 10 subsets: during each iteration, 9 subsets were used for training, while the remaining subset was used for testing.  
-- Each subset served as a testing set exactly once, ensuring comprehensive evaluation of model performance.  
-- The average performance across all folds provided a reliable estimate of how each model would perform on unseen data.
-
-[Back to Top.](#ML_part)
-
----
-
-#### Models Used {models-used}
-The following machine learning models were trained using the prepared dataset:  
-1. **Linear Regression**: A baseline model to identify linear relationships between variables.  
-2. **Multi-Linear Regression**: Extends Linear Regression by incorporating multiple predictors.  
-3. **Random Forest**: An ensemble learning method that constructs multiple decision trees and averages their predictions.  
-4. **Gradient Boosting**: Focuses on sequentially improving the model by minimizing residual errors in each iteration.  
-5. **Neural Network**: A flexible model capable of capturing complex, nonlinear relationships in the data.
-
-These models were trained using the dynamic formula created earlier, ensuring consistent feature selection across all implementations.
-
-[Back to Top.](#ML_part)
-
----
-
-#### Performance {performance}
-To evaluate the models, metrics such as **Root Mean Squared Error (RMSE)** and **R-squared (R²)** were calculated:  
-- **RMSE** quantified the prediction error, with lower values indicating better performance.  
-- **R-squared (R²)** measured how well the models captured variance in banana consumption.  
-- Cross-validation results were summarized using boxplots to visualize performance consistency.  
-
-**Key Insights**:
-- The **Random Forest** and **Gradient Boosting** models outperformed others in terms of accuracy and error minimization.  
-- Neural networks provided flexibility but required careful tuning to optimize performance.  
-- Predictions from the best-performing models closely matched actual consumption trends, as seen in scatterplots of predicted vs. actual values.
-
-[Back to Top.](#ML_part)
