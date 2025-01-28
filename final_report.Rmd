@@ -22,8 +22,10 @@ pacman::p_load(tidyverse, ggplot2, flexdashboard, moderndive, effectsize, modelr
 
 
 consumption_date <- read.csv("~/Banana_project/consumption_date.csv")
+
 consumption_traffic <-  read_csv("~/Banana_project/consumption_traffic.csv")
 Consumption_Log <- read_csv("~/Banana_project/consumption_log.csv")
+Consumption_Log_withweekend <- full_join(Consumption_Log, consumption_traffic, by = "date_id")
 bananas_thrown_away <- read_csv("~/Banana_project/bananas_thrown_away.csv")
 by_time <- consumption_traffic %>% 
   group_by(time_period) %>% 
@@ -38,10 +40,9 @@ by_time_long <- by_time %>%
                values_to = "value")
 
 
-data <- Consumption_Log
+data <- Consumption_Log_withweekend
 
-
-time_dummies <- model.matrix(~ time_period - 1, data)
+time_dummies <- model.matrix(~ time_period.y - 1, data)
 data <- cbind(data, time_dummies)
 
 set.seed(123) 
@@ -109,7 +110,7 @@ results <- data.frame(
   Model = c("Linear Regression", "SVM", "Random Forest", "Gradient Boosting", "Neural Network"),
   RMSE = c(lm_rmse, svm_rmse, rf_rmse, xgb_rmse, nn_rmse)
 )
-results
+
 
 ```
 

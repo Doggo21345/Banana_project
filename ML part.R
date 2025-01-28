@@ -41,25 +41,14 @@ mse <- test_data %>%
 test_data <- test_data %>%
   mutate(index = row_number())
 
-ggplot(test_data, aes(x = index)) +
-  geom_line(aes(y = bananas_consumed, color = "Actual"), size = 1) +
-  geom_line(aes(y = predictions, color = "Predicted"), size = 1, linetype = "dashed") +
-  labs(
-    title = "Predicted vs Actual Banana Consumption",
-    x = "Index (Test Observations)",
-    y = "Bananas Consumed",
-    color = "Legend"
-  ) +
-  theme_minimal() +
-  theme(legend.position = "bottom")
+
 
   
 
 
 
 data <- Consumption_Log_original
-view(data)
-view(Consumption_Log_original)
+
 
 time_dummies <- model.matrix(~ time_period - 1, data)
 data <- cbind(data, time_dummies)
